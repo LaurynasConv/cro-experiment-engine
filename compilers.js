@@ -66,8 +66,8 @@ const compileTS = () => {
   });
 
   devCompiler.watch({}, (devErr, devInfo) => {
-    if (devErr) {
-      return console.error(devErr);
+    if (devErr || devInfo.hasErrors()) {
+      return console.error('TS (dev) compilation error', devErr || devInfo.compilation.errors);
     }
 
     console.log('Done TS (dev) compilation...');
@@ -75,7 +75,7 @@ const compileTS = () => {
 
     prodCompiler.run((prodErr, prodInfo) => {
       if (prodErr || prodInfo.hasErrors()) {
-        return console.error(prodErr || prodInfo.compilation.errors);
+        return console.error('TS (prod) compilation error', prodErr || prodInfo.compilation.errors);
       }
 
       console.log('Done TS (prod) compilation...');
