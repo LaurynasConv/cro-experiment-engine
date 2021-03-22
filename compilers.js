@@ -18,12 +18,12 @@ const compileTS = () => {
       rules: [
         {
           test: /\.tsx?$/,
-          loader: 'babel-loader',
+          loader: require.resolve('babel-loader'),
           options: {
-            presets: ['@babel/preset-env', '@babel/preset-typescript'],
+            presets: [require.resolve('@babel/preset-env'), require.resolve('@babel/preset-typescript')],
             plugins: [
-              '@babel/plugin-proposal-class-properties',
-              ['@babel/plugin-transform-template-literals', { loose: true }],
+              require.resolve('@babel/plugin-proposal-class-properties'),
+              [require.resolve('@babel/plugin-transform-template-literals'), { loose: true }],
             ],
           },
         },
