@@ -4,11 +4,14 @@
   "description": "Development server for CRO experiments",
   "private": true,
   "scripts": {
-    "start": "nodemon server.js --watch server.js"
+    "start": "nodemon index.js --watch index.js"
   },
   "keywords": [],
   "author": "Laurynas Grigutis",
   "license": "ISC",
+  "bin": {
+    "croe": "./index.js"
+  },
   "dependencies": {
     "@babel/core": "^7.13.8",
     "@babel/plugin-proposal-class-properties": "^7.13.0",
