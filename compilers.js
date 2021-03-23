@@ -22,14 +22,11 @@ const compileTS = () => {
           options: {
             presets: [require.resolve('@babel/preset-env'), require.resolve('@babel/preset-typescript')],
             plugins: [
+              require.resolve('./plugins/html'),
               require.resolve('@babel/plugin-proposal-class-properties'),
               [require.resolve('@babel/plugin-transform-template-literals'), { loose: true }],
             ],
           },
-        },
-        {
-          test: /\.tsx?$/,
-          loader: path.resolve(__dirname, 'loaders/html.js'),
         },
       ],
     },
