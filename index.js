@@ -9,12 +9,14 @@ const { createFiles } = require('./create-files');
 const { emitJS, emitCSS } = require('./socket');
 const { expDir, devDir } = require('./paths');
 
-process.stdin.setRawMode(true);
-process.stdin.on('keypress', (chunk, key) => {
-  if (key && key.name === 'c' && key.ctrl) {
-    process.exit();
-  }
-});
+if (process.stdin.setRawMode) {
+  process.stdin.setRawMode(true);
+  process.stdin.on('keypress', (chunk, key) => {
+    if (key && key.name === 'c' && key.ctrl) {
+      process.exit();
+    }
+  });
+}
 
 createFiles().then(() => {
   console.log('Experience ready!');
