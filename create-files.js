@@ -9,10 +9,11 @@ const rl = readline.createInterface({
 
 const fs = require('fs-extra');
 
-const { sourceDir, expDir, devDir } = require('./paths');
+const { getPaths } = require('./paths');
 
 exports.createFiles = () =>
   new Promise(resolve => {
+    const { sourceDir, expDir, devDir } = getPaths();
     const entryTsPath = path.join(sourceDir, 'index.ts');
     const entrySassPath = path.join(sourceDir, 'index.scss');
 

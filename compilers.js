@@ -5,9 +5,10 @@ const fs = require('fs-extra');
 const webpack = require('webpack');
 const sass = require('node-sass');
 
-const { sourceDir, devDir, expDir } = require('./paths');
+const { getPaths } = require('./paths');
 
 const compileTS = () => {
+  const { sourceDir, devDir, expDir } = getPaths();
   /** @type { webpack.Configuration } */
   const options = {
     entry: path.join(sourceDir, 'index'),
@@ -81,6 +82,7 @@ const compileTS = () => {
   });
 };
 const compileSass = () => {
+  const { sourceDir, devDir, expDir } = getPaths();
   const file = path.join(sourceDir, 'index.scss');
   const outFile = path.join(devDir, 'index.css');
   /** @type { sass.Options } */

@@ -4,16 +4,16 @@ const path = require('path');
 const socketIo = require('socket.io');
 const fs = require('fs-extra');
 
-const { rootDir } = require('./paths');
+const { getPaths } = require('./paths');
 
 /** @type { socketIo.Server } */
-const io = socketIo(4000, { cors: true });
+let io;
 
 const getSockets = (exp = '') => {
   /** @type { socketIo.Socket[] } */
   const sockets = [];
 
-  io.sockets.sockets.forEach(socket => {
+  io?.sockets.sockets.forEach(socket => {
     if (exp.includes(socket.handshake.query.id)) {
       sockets.push(socket);
     }
@@ -37,6 +37,7 @@ const emitJS = (dir = '') => {
     socket.emit('js', mainJS);
   });
 };
+
 const emitCSS = (dir = '') => {
   getSockets(dir).forEach(socket => {
     console.log(`Emit CSS for ${socket.handshake.query.id}`);
@@ -44,15 +45,24 @@ const emitCSS = (dir = '') => {
   });
 };
 
-io.on('connect', ({ handshake: { query } }) => {
-  if (query.id) {
-    const requestedExpDir = path.join(rootDir, query.id, 'dev');
+const startServer = () =>
+  new Promise(resolve => {
+    const { rootDir } = getPaths();
 
-    if (fs.existsSync(requestedExpDir)) {
-      emitJS(requestedExpDir);
-      emitCSS(requestedExpDir);
-    }
-  }
-});
+    io = socketIo(4000, { cors: true });
+    io.on('connect', ({ handshake: { query } }) => {
+      resolve();
+      if (query.id) {
+        const requestedExpDir = path.join(rootDir, query.id, 'dev');
 
-module.exports = { emitJS, emitCSS };
+        if (fs.existsSync(requestedExpDir)) {
+          emitJS(requestedExpDir);
+          emitCSS(requestedExpDir);
+        }
+      }
+    });
+
+    return io;
+  });
+
+module.exports = { startServer, emitJS, emitCSS };

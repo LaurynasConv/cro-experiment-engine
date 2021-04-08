@@ -1,34 +1,27 @@
 #!/usr/bin/env node
 /* eslint-disable @typescript-eslint/no-var-requires, no-console */
-const path = require('path');
+const { program } = require('commander');
 
-const chokidar = require('chokidar');
+const { optimise } = require('./optimise');
+const { start } = require('./server');
 
-const { compileTS, compileSass } = require('./compilers');
-const { createFiles } = require('./create-files');
-const { emitJS, emitCSS } = require('./socket');
-const { expDir, devDir } = require('./paths');
+program.version('0.0.1', '-v, --version', 'output the current version');
 
-if (process.stdin.setRawMode) {
-  process.stdin.setRawMode(true);
-  process.stdin.on('keypress', (chunk, key) => {
-    if (key && key.name === 'c' && key.ctrl) {
-      process.exit();
-    }
+program
+  .command('start [experiment]')
+  .alias('s')
+  .description('Start the development server')
+  .action(experiment => {
+    start(experiment);
   });
-}
 
-createFiles().then(() => {
-  console.log('Experience ready!');
-
-  compileTS();
-  compileSass();
-  chokidar.watch(path.join(expDir, '**/*.scss')).on('change', compileSass);
-  chokidar.watch(devDir).on('change', file => {
-    if (/.+\.js/.test(file)) {
-      emitJS(devDir);
-    } else if (/.+\.css$/.test(file)) {
-      emitCSS(devDir);
-    }
+program
+  .command('optimise <experiment>')
+  .alias('o')
+  .description('Optimise assets for the experience')
+  .option('-q, --quality <quality>', 'Image quality to use')
+  .action((experiment, options) => {
+    optimise(experiment, options.quality).then(process.exit);
   });
-});
+
+program.parse(process.argv);
