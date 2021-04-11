@@ -22,7 +22,7 @@ const getStats = (oldFile, newFile) => {
   };
 };
 
-const optimise = (experiment, quality = 80) =>
+const optimise = (experiment, quality = 80, optimiseAll = false) =>
   new Promise(resolve => {
     const optimisationInfo = {};
     const expDirectory = path.join(process.cwd(), experiment);
@@ -44,29 +44,39 @@ const optimise = (experiment, quality = 80) =>
 
             if (webpMimes.includes(info?.mime)) {
               const destination = path.join(dirName, 'webp');
+              const destinationFilePath = path.join(destination, `${fileName.split('.')[0]}.webp`);
 
-              await imagemin([filePath], {
-                plugins: [imageminWebp({ quality: +quality })],
-                destination,
-              });
+              if (optimiseAll || !fs.existsSync(destinationFilePath)) {
+                await imagemin([filePath], {
+                  plugins: [imageminWebp({ quality: +quality })],
+                  destination,
+                });
 
-              const postStats = fs.statSync(path.join(destination, `${fileName.split('.')[0]}.webp`));
-              optimisationInfo[fileName] = getStats(stats, postStats);
+                if (/\.jpg$/.test(fileName)) {
+                  fs.renameSync(filePath, path.join(folder, fileName.replace(/\.jpg$/, '.jpeg')));
+                }
+
+                const postStats = fs.statSync(destinationFilePath);
+                optimisationInfo[fileName] = getStats(stats, postStats);
+              }
             } else if (/\.svg$/.test(filePath) && !/\/min$/.test(dirName)) {
               const destination = path.join(dirName, 'min');
-              const source = fs.readFileSync(filePath, 'utf-8');
-              const optimised = svgo.optimize(source, {
-                plugins: svgo.extendDefaultPlugins([{ name: 'removeViewBox', active: false }]),
-                path: filePath,
-                multipass: true,
-              });
+              const destinationFilePath = path.join(destination, fileName);
 
-              fs.ensureDirSync(destination);
+              if (optimiseAll || !fs.existsSync(destinationFilePath)) {
+                const source = fs.readFileSync(filePath, 'utf-8');
+                const optimised = svgo.optimize(source, {
+                  plugins: svgo.extendDefaultPlugins([{ name: 'removeViewBox', active: false }]),
+                  path: filePath,
+                  multipass: true,
+                });
 
-              const destinationPath = path.join(destination, fileName);
-              fs.writeFileSync(destinationPath, optimised.data);
-              const postStats = fs.statSync(destinationPath);
-              optimisationInfo[fileName] = getStats(stats, postStats);
+                fs.ensureDirSync(destination);
+
+                fs.writeFileSync(destinationFilePath, optimised.data);
+                const postStats = fs.statSync(destinationFilePath);
+                optimisationInfo[fileName] = getStats(stats, postStats);
+              }
             }
           }
 
@@ -74,7 +84,12 @@ const optimise = (experiment, quality = 80) =>
         }
 
         if (folder === expDirectory) {
-          console.table(optimisationInfo);
+          if (Object.keys(optimisationInfo).length) {
+            console.table(optimisationInfo);
+          } else {
+            console.log('Nothing to optimize 👌');
+          }
+
           return resolve();
         }
       })(0);

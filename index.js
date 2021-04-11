@@ -20,8 +20,9 @@ program
   .alias('o')
   .description('Optimise assets for the experience')
   .option('-q, --quality <quality>', 'Image quality to use')
+  .option('-a, --all', 'Optimise all images. By default the optimiser skips the image if destination exists')
   .action((experiment, options) => {
-    optimise(experiment, options.quality).then(process.exit);
+    optimise(experiment, options.quality, options.all).then(process.exit);
   });
 
 program.parse(process.argv);
