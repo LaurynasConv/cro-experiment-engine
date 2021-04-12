@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires, no-console */
 const path = require('path');
 
+const postcssPresetEnv = require('postcss-preset-env');
 const fs = require('fs-extra');
 const webpack = require('webpack');
 const sass = require('node-sass');
@@ -118,7 +119,10 @@ const compileSass = () => {
         console.log('Done SCSS (prod) compilation...');
         console.log(`  Compile time: ${prodInfo.stats.end - prodInfo.stats.start} ms`);
 
-        fs.writeFileSync(path.join(expDir, 'index.css'), prodInfo.css);
+        const prodFilePath = path.join(expDir, 'index.css');
+        postcssPresetEnv
+          .process(prodInfo.css, { from: file, to: prodFilePath }, { browsers: ['iOS 8', 'not dead'] })
+          .then(({ css }) => fs.writeFileSync(prodFilePath, css));
       });
     },
   );
