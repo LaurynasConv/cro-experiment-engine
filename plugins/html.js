@@ -7,7 +7,7 @@ module.exports = ({ types } = {}) => {
   /** @argument { import('@babel/core').types.Comment[] } */
   const checkIsHtml = ([comment] = []) => comment?.type === 'CommentBlock' && comment?.value.trim() === 'html';
   const minifyHtml = (html = '') =>
-    html.replace(/\s+</, '<').replace(/>\s+/, '>').replace(/>\s+</g, '><').replace(/\s\s+/g, ' ');
+    html.replace(/^\s+</, '<').replace(/>\s+$/, '>').replace(/>\s+</g, '><').replace(/\s\s+/g, ' ');
 
   return {
     name: 'template-html-minifier',
