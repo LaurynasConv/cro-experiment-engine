@@ -1,5 +1,5 @@
 /* eslint-disable */
-(function trigger() {
+function trigger() {
   var socketScript = document.createElement('script');
   var style = document.createElement('style');
 
@@ -29,4 +29,9 @@
 
   document.head.appendChild(style);
   document.head.appendChild(socketScript);
-})();
+  window.__con_dev_injected = true;
+};
+
+if (!window.__con_dev_injected) {
+  trigger();
+}
