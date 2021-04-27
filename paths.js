@@ -7,7 +7,7 @@ const setUpPaths = providedExp => {
   const rootDir = path.join(__dirname, '../experiments');
   const expDir = providedExp ? path.join(process.cwd(), providedExp) : process.cwd();
   const sourceDir = path.join(expDir, 'source');
-  const devDir = path.join(expDir, 'dev');
+  const devDir = path.join(expDir, '__dev');
 
   paths = { rootDir, expDir, sourceDir, devDir };
   console.log(paths);

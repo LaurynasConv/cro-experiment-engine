@@ -53,7 +53,7 @@ const startServer = () =>
     io.on('connect', ({ handshake: { query } }) => {
       resolve();
       if (query.id) {
-        const requestedExpDir = path.join(rootDir, query.id, 'dev');
+        const requestedExpDir = path.join(rootDir, query.id, '__dev');
 
         if (fs.existsSync(requestedExpDir)) {
           emitJS(requestedExpDir);
