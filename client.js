@@ -29,9 +29,9 @@ function trigger() {
 
   document.head.appendChild(style);
   document.head.appendChild(socketScript);
-  window.__con_dev_injected = true;
+  window.__con_dev = { injected: true };
 };
 
-if (!window.__con_dev_injected) {
+if (!window.__con_dev) {
   trigger();
 }
