@@ -8,7 +8,7 @@ const setUpPaths = providedExp => {
   const expDir = providedExp ? path.join(process.cwd(), providedExp) : process.cwd();
   const sourceDir = path.join(expDir, 'source');
   const devDir = path.join(expDir, '__dev');
-  const expPath = expDir.replace(new RegExp(`${rootDir}/?`), '');
+  const expPath = expDir.replace(/\/$/, '').replace(new RegExp(`${rootDir}/?`), '');
 
   paths = { rootDir, expDir, sourceDir, devDir, expPath };
   console.log(paths);
