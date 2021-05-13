@@ -40,6 +40,7 @@ const optimise = (experiment, quality = 80, optimiseAll = false) =>
             await traverse(filePath);
           } else {
             const info = await FileType.fromFile(filePath);
+            const relFilePath = filePath.replace(expDirectory, '');
             const dirName = path.dirname(filePath);
 
             if (webpMimes.includes(info?.mime)) {
@@ -57,7 +58,7 @@ const optimise = (experiment, quality = 80, optimiseAll = false) =>
                 }
 
                 const postStats = fs.statSync(destinationFilePath);
-                optimisationInfo[fileName] = getStats(stats, postStats);
+                optimisationInfo[relFilePath] = getStats(stats, postStats);
               }
             } else if (/\.svg$/.test(filePath) && !/\/min$/.test(dirName)) {
               const destination = path.join(dirName, 'min');
@@ -75,7 +76,7 @@ const optimise = (experiment, quality = 80, optimiseAll = false) =>
 
                 fs.writeFileSync(destinationFilePath, optimised.data);
                 const postStats = fs.statSync(destinationFilePath);
-                optimisationInfo[fileName] = getStats(stats, postStats);
+                optimisationInfo[relFilePath] = getStats(stats, postStats);
               }
             }
           }
