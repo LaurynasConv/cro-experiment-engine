@@ -5,6 +5,7 @@ const postcssPresetEnv = require('postcss-preset-env');
 const fs = require('fs-extra');
 const webpack = require('webpack');
 const sass = require('node-sass');
+const prettier = require('prettier');
 
 const { getPaths } = require('./paths');
 
@@ -76,6 +77,11 @@ const compileTS = () => {
       if (prodErr || prodInfo.hasErrors()) {
         return console.error('TS (prod) compilation error', prodErr || prodInfo.compilation.errors);
       }
+
+      const prodFilePath = path.join(expDir, 'index.js');
+      const rawCode = fs.readFileSync(prodFilePath, 'utf-8');
+      const prettified = prettier.format(rawCode, { parser: 'babel', printWidth: 200 });
+      fs.writeFileSync(prodFilePath, prettified);
 
       console.log('Done TS (prod) compilation...');
       console.log(`  Compile time: ${prodInfo.endTime - prodInfo.startTime} ms`);
