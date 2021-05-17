@@ -14,7 +14,7 @@ module.exports = ({ types } = {}) => {
     visitor: {
       TemplateLiteral({ node }) {
         if (checkIsHtml(node.leadingComments)) {
-          node.leadingComments = null;
+          node.leadingComments[0].value = ' prettier-ignore ';
           node.quasis = node.quasis.map(quasis => {
             quasis.value.raw = minifyHtml(quasis.value.raw);
             quasis.value.cooked = minifyHtml(quasis.value.cooked);
