@@ -1,13 +1,12 @@
 {
-  "name": "cro-experiment-engine",
+  "name": "@conversiondev/engine",
   "version": "1.0.0",
   "description": "Development server for CRO experiments",
-  "private": true,
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "upload": "npm publish --access public"
   },
-  "keywords": [],
-  "author": "Laurynas Grigutis",
+  "author": "Laurynas",
   "license": "ISC",
   "bin": {
     "cro": "./index.js"
