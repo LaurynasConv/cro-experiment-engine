@@ -54,13 +54,17 @@ const startServer = () =>
       resolve();
       if (query.id) {
         const requestedExpDir = path.join(rootDir, query.id, '__dev');
+        const expFound = fs.existsSync(requestedExpDir);
+        console.log('New connection', { query, requestedExpDir, expFound });
 
-        if (fs.existsSync(requestedExpDir)) {
+        if (expFound) {
           emitJS(requestedExpDir);
           emitCSS(requestedExpDir);
         }
       }
     });
+
+    console.log('Server started');
 
     return io;
   });
