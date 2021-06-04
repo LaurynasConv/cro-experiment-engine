@@ -89,6 +89,7 @@ exports.createFiles = () =>
       });
     } else {
       if (!fs.existsSync(clientJsPath)) {
+        fs.ensureDirSync(devDir);
         fs.writeFileSync(clientJsPath, getClientCode());
       }
       fs.ensureFileSync(cleanupPath);
