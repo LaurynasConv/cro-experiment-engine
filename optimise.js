@@ -22,7 +22,7 @@ const getStats = (oldFile, newFile) => {
   };
 };
 
-const optimise = (experiment, quality = 80, optimiseAll = false) =>
+const optimise = (experiment, quality = 80, optimiseAll = false, inline = false) =>
   new Promise(resolve => {
     const optimisationInfo = {};
     const expDirectory = path.join(process.cwd(), experiment);
@@ -60,11 +60,12 @@ const optimise = (experiment, quality = 80, optimiseAll = false) =>
                 const postStats = fs.statSync(destinationFilePath);
                 optimisationInfo[relFilePath] = getStats(stats, postStats);
               }
-            } else if (/\.svg$/.test(filePath) && !/\/min$/.test(dirName)) {
-              const destination = path.join(dirName, 'min');
+            } else if (/\.svg$/.test(filePath) && (inline || !/\/min$/.test(dirName))) {
+              const destination = inline ? dirName : path.join(dirName, 'min');
               const destinationFilePath = path.join(destination, fileName);
+              console.log({ inline });
 
-              if (optimiseAll || !fs.existsSync(destinationFilePath)) {
+              if (optimiseAll || inline || !fs.existsSync(destinationFilePath)) {
                 const source = fs.readFileSync(filePath, 'utf-8');
                 const optimised = svgo.optimize(source, {
                   plugins: svgo.extendDefaultPlugins([{ name: 'removeViewBox', active: false }]),

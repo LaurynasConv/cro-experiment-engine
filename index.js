@@ -30,8 +30,9 @@ program
   .description('Optimise assets for the experience')
   .option('-q, --quality <quality>', 'Image quality to use')
   .option('-a, --all', 'Optimise all images. By default the optimiser skips the image if destination exists')
+  .option('-i, --inline', 'Update the existing svgs instead of creating min/[name].svg')
   .action((experiment, options) => {
-    optimise(experiment, options.quality, options.all).then(process.exit);
+    optimise(experiment, options.quality, options.all, options.inline).then(process.exit);
   });
 
 program.parse(process.argv);
