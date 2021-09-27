@@ -55,7 +55,7 @@ const startServer = () =>
       if (query.id) {
         const requestedExpDir = path.join(rootDir, query.id, '__dev');
         const expFound = fs.existsSync(requestedExpDir);
-        console.log('New connection', { query, requestedExpDir, expFound });
+        console.log('New connection', { query: { id: query.id }, requestedExpDir, expFound });
 
         if (expFound) {
           emitJS(requestedExpDir);

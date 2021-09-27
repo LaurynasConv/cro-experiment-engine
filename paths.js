@@ -3,7 +3,12 @@ const path = require('path');
 
 const fs = require('fs-extra');
 
-let paths = { rootDir: '', expDir: '', sourceDir: '', devDir: '', expPath: '' };
+let paths = {
+  rootDir: '',
+  expDir: '',
+  expPath: '',
+  variations: [{ rootDir: '', sourceDir: '', devDir: '', varPath: '' }],
+};
 
 const getRootDir = currentDir => {
   if (/\/experiments$/.test(currentDir)) {
@@ -16,21 +21,36 @@ const getRootDir = currentDir => {
   }
 };
 
-const setUpPaths = providedExp => {
+/** @argument providedExp {string} */
+/** @argument variations {string[]} */
+const setUpPaths = (providedExp, variations) => {
   const rootDir = getRootDir(process.cwd());
   const expDir = providedExp ? path.join(process.cwd(), providedExp) : process.cwd();
-  const sourceDir = path.join(expDir, 'source');
-  const devDir = path.join(expDir, '__dev');
   const expPath = expDir.replace(/\/$/, '').replace(new RegExp(`${rootDir}/?`), '');
 
-  paths = { rootDir, expDir, sourceDir, devDir, expPath };
+  paths = {
+    rootDir,
+    expDir,
+    expPath,
+    variations: variations.map(variationPath => {
+      const variationRootDir = path.join(expDir, variationPath);
+      return {
+        sourceDir: path.join(variationRootDir, 'source'),
+        devDir: path.join(variationRootDir, '__dev'),
+        rootDir: variationRootDir,
+        varPath: path.join(expPath, variationPath),
+      };
+    }),
+  };
   console.log(paths);
   return paths;
 };
 
-const getPaths = providedExp => {
+/** @argument providedExp {string} */
+/** @argument variations {string[]} */
+const getPaths = (providedExp, variations) => {
   if (providedExp) {
-    setUpPaths(providedExp);
+    setUpPaths(providedExp, variations);
   }
 
   return paths;

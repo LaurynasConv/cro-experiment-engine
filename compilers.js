@@ -9,8 +9,11 @@ const prettier = require('prettier');
 
 const { getPaths } = require('./paths');
 
-const compileTS = () => {
-  const { sourceDir, devDir, expDir } = getPaths();
+/** @argument sourceDir {string} */
+/** @argument devDir {string} */
+/** @argument expDir {string} */
+const compileTS = (sourceDir, devDir, expDir) => {
+  const { rootDir: expRootDir } = getPaths();
   /** @type { webpack.Configuration } */
   const options = {
     entry: path.join(sourceDir, 'index'),
@@ -70,9 +73,6 @@ const compileTS = () => {
       return console.error('TS (dev) compilation error', devErr || devInfo.compilation.errors);
     }
 
-    console.log('Done TS (dev) compilation...');
-    console.log(`  Compile time: ${devInfo.endTime - devInfo.startTime} ms`);
-
     prodCompiler.run((prodErr, prodInfo) => {
       if (prodErr || prodInfo.hasErrors()) {
         return console.error('TS (prod) compilation error', prodErr || prodInfo.compilation.errors);
@@ -83,13 +83,22 @@ const compileTS = () => {
       const prettified = prettier.format(rawCode, { parser: 'babel', printWidth: 200 });
       fs.writeFileSync(prodFilePath, prettified);
 
-      console.log('Done TS (prod) compilation...');
-      console.log(`  Compile time: ${prodInfo.endTime - prodInfo.startTime} ms`);
+      console.log('-----');
+      console.table({
+        'TS updated': {
+          'Experience path': `${expDir.replace(expRootDir, '')}`,
+          'Dev compile time': `${devInfo.endTime - devInfo.startTime} ms`,
+          'Prod compile time': `${prodInfo.endTime - prodInfo.startTime} ms`,
+        },
+      });
     });
   });
 };
-const compileSass = () => {
-  const { sourceDir, devDir, expDir } = getPaths();
+/** @argument sourceDir {string} */
+/** @argument devDir {string} */
+/** @argument expDir {string} */
+const compileSass = (sourceDir, devDir, expDir) => {
+  const { rootDir: expRootDir } = getPaths();
   const file = path.join(sourceDir, 'index.scss');
   const outFile = path.join(devDir, 'index.css');
   /** @type { sass.Options } */
@@ -112,9 +121,6 @@ const compileSass = () => {
         return console.error(devErr);
       }
 
-      console.log('Done SCSS (dev) compilation...');
-      console.log(`  Compile time: ${devInfo.stats.end - devInfo.stats.start} ms`);
-
       fs.writeFileSync(outFile, devInfo.css);
 
       sass.render({ ...options, outputStyle: 'expanded' }, (prodErr, prodInfo) => {
@@ -122,8 +128,14 @@ const compileSass = () => {
           throw prodErr;
         }
 
-        console.log('Done SCSS (prod) compilation...');
-        console.log(`  Compile time: ${prodInfo.stats.end - prodInfo.stats.start} ms`);
+        console.log('-----');
+        console.table({
+          'SCSS updated': {
+            'Experience path': `${expDir.replace(expRootDir, '')}`,
+            'Dev compile time': `${devInfo.stats.end - devInfo.stats.start} ms`,
+            'Prod compile time': `${prodInfo.stats.end - prodInfo.stats.start} ms`,
+          },
+        });
 
         const prodFilePath = path.join(expDir, 'index.css');
         postcssPresetEnv

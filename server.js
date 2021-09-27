@@ -8,23 +8,33 @@ const { createFiles } = require('./create-files');
 const { startServer, emitJS, emitCSS } = require('./socket');
 const { getPaths } = require('./paths');
 
-const start = providedExp => {
-  const { expDir, devDir } = getPaths(providedExp);
+/** @argument providedExp {string} */
+/** @argument variations {string[]} */
+const start = (providedExp, variations) => {
+  console.log({ providedExp, variations });
+  const paths = getPaths(providedExp, variations);
 
   createFiles().then(async () => {
-    compileTS();
-    compileSass();
     startServer();
 
     console.log('Experience ready!');
 
-    chokidar.watch(path.join(expDir, '**/*.scss')).on('change', compileSass);
-    chokidar.watch(devDir).on('change', file => {
-      if (/.+\.js/.test(file)) {
-        emitJS(devDir);
-      } else if (/.+\.css$/.test(file)) {
-        emitCSS(devDir);
-      }
+    paths.variations.forEach(variation => {
+      const { sourceDir, devDir, rootDir } = variation;
+      compileTS(sourceDir, devDir, rootDir);
+      compileSass(sourceDir, devDir, rootDir);
+      chokidar
+        .watch(path.join(paths.rootDir, '**/*.scss'), {
+          ignored: paths.variations.map(it => it.rootDir).filter(it => it !== variation.rootDir),
+        })
+        .on('change', () => compileSass(sourceDir, devDir, rootDir));
+      chokidar.watch(devDir).on('change', file => {
+        if (/.+\.js/.test(file)) {
+          emitJS(devDir);
+        } else if (/.+\.css$/.test(file)) {
+          emitCSS(devDir);
+        }
+      });
     });
   });
 };

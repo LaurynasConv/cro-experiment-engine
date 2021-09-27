@@ -5,14 +5,23 @@ const { program } = require('commander');
 const { optimise } = require('./optimise');
 const { start } = require('./server');
 
-program.version('0.0.1', '-v, --version', 'output the current version');
+program.version('0.0.1', '--version', 'output the current version');
+
+function list(val, memo) {
+  memo.push(val);
+  return memo;
+}
 
 program
   .command('start [experiment]')
   .alias('s')
+  .option('-v, --variations <path>', 'Experiment variations', list, [''])
   .description('Start the development server')
-  .action(experiment => {
-    start(experiment);
+  .action((experiment, options) => {
+    if (options.variations.length > 1) {
+      options.variations.shift();
+    }
+    start(experiment, options.variations);
   });
 
 program
