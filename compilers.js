@@ -13,7 +13,7 @@ const { getPaths } = require('./paths');
 /** @argument devDir {string} */
 /** @argument expDir {string} */
 const compileTS = (sourceDir, devDir, expDir) => {
-  const { rootDir: expRootDir } = getPaths();
+  const { rootDir: expRootDir, expPath } = getPaths();
   /** @type { webpack.Configuration } */
   const options = {
     entry: path.join(sourceDir, 'index'),
@@ -81,7 +81,10 @@ const compileTS = (sourceDir, devDir, expDir) => {
       const prodFilePath = path.join(expDir, 'index.js');
       const rawCode = fs.readFileSync(prodFilePath, 'utf-8');
       const prettified = prettier.format(rawCode, { parser: 'babel', printWidth: 200 });
-      fs.writeFileSync(prodFilePath, prettified);
+      const splitPathRegExp = expPath.split('/').map(it => `(${it}/)?`);
+      const concatRegExp = new RegExp(`CONCATENATED MODULE: ./${splitPathRegExp.join('')}`, 'g');
+      const concatModuleReplaced = prettified.replace(concatRegExp, `CONCATENATED MODULE: ${expPath}/`);
+      fs.writeFileSync(prodFilePath, concatModuleReplaced);
 
       console.log('-----');
       console.table({
