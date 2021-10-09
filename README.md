@@ -20,6 +20,10 @@
 
 - Once finished you can copy over code from `path/to/exp/index.js` & `path/to/exp/index.css` to the CRO platform
 
+- You can also start the server for multiple variations by passing in `-v` options (e.g. `cro s path/to/exp -v variation-1 -v variation-2`).
+  
+  This would create two separate folders on your system (`path/to/exp/variation-1` & `path/to/exp/variation-2`) and the server will watch for changes in either one. This way you can write shared code (TS/SCSS) and use it between the different variations. E.g. `path/to/exp/shared.ts` can be used in both variations to do some common logic.
+
 ### JavaScript concepts
 - The entry file for JavaScript is `path/to/exp/source/index.ts`. As you might guess you are free to use [TypeScript](https://www.typescriptlang.org/) in the experiments. All of the code will be bundled and compiled to ES5 JavaScript.
 
@@ -47,7 +51,7 @@
 ## Asset optimization
 
 You can optimize assets by running `cro o path/to/assets`. This will:
-- Find any SVG files and create a minified version in a `min` directory next to the minified file.
+- Find any SVG files and create a minified version in a `min` directory next to the minified file. If you pass in `-i` option the SVG file will be updated "inline" (replaced)
 
   E.g. to minify `path/to/assets/icon-1.svg` & `path/to/assets/icon-2.svg` you would run `cro o path/to/assets` and it will create `path/to/assets/min/icon-1.svg` & `path/to/assets/min/icon-2.svg`.
 
