@@ -32,9 +32,9 @@ function trigger() {
   if (window.__con_dev[experiment].code) {
     injectJs(window.__con_dev[experiment].code);
   } else {
-    socketScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js';
+    socketScript.src = 'http://localhost:4000/libs/socket.io/3.1.1/socket.io.js';
     socketScript.addEventListener('load', function() {
-      var socket = io('http://localhost:4000', {
+      var socket = __con_dev.io('http://localhost:4000', {
         query: { id: experiment },
       });
 

@@ -1,13 +1,18 @@
 /* eslint-disable @typescript-eslint/no-var-requires, no-console */
+const http = require('http');
 const path = require('path');
 
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
+const express = require('express');
 const fs = require('fs-extra');
 
 const { getPaths } = require('./paths');
 
-/** @type { socketIo.Server } */
-let io;
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: true });
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 const getSockets = (exp = '') => {
   /** @type { socketIo.Socket[] } */
@@ -49,9 +54,9 @@ const startServer = () =>
   new Promise(resolve => {
     const { rootDir } = getPaths();
 
-    io = socketIo(4000, { cors: true });
     io.on('connect', ({ handshake: { query } }) => {
       resolve();
+
       if (query.id) {
         const requestedExpDir = path.join(rootDir, query.id, '__dev');
         const expFound = fs.existsSync(requestedExpDir);
@@ -64,8 +69,7 @@ const startServer = () =>
       }
     });
 
-    console.log('Server started');
-
+    server.listen(4000, () => console.log('listening on *:4000'));
     return io;
   });
 
