@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires, no-console */
 const path = require('path');
 
+const postcss = require('postcss');
 const postcssPresetEnv = require('postcss-preset-env');
 const fs = require('fs-extra');
 const webpack = require('webpack');
@@ -141,8 +142,8 @@ const compileSass = (sourceDir, devDir, expDir) => {
         });
 
         const prodFilePath = path.join(expDir, 'index.css');
-        postcssPresetEnv
-          .process(prodInfo.css, { from: file, to: prodFilePath }, { browsers: ['iOS 8', 'not dead'] })
+        postcss([postcssPresetEnv({ browsers: ['iOS 8', 'not dead'] })])
+          .process(prodInfo.css, { from: file, to: prodFilePath })
           .then(({ css }) => fs.writeFileSync(prodFilePath, css));
       });
     },
