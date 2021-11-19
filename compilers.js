@@ -108,7 +108,8 @@ const getCodeInConversionTemplate = (code, fileType, env, variationDir) => {
 
   /** @type {Record<'author' | 'date' | 'expPath' | 'variationCode', string>} */
   const varsToReplace = {
-    expPath: expPath.replace(/\//g, ' '),
+    expName: expPath.replace(/\//g, ' '),
+    expTag: expPath.replace(/\/|\.|\s+/g, '-'),
     author: package?.author || 'Conversion',
     date: format(new Date(), 'P p', { locale: ukLocale }),
     expId: expId.replace(/\./g, '-'),
