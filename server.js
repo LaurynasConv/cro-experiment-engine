@@ -20,14 +20,14 @@ const start = (providedExp, variations) => {
     console.log('Experience ready!');
 
     paths.variations.forEach(variation => {
-      const { sourceDir, devDir, rootDir } = variation;
-      compileTS(sourceDir, devDir, rootDir);
-      compileSass(sourceDir, devDir, rootDir);
+      const { sourceDir, devDir, variationDir } = variation;
+      compileTS(sourceDir, devDir, variationDir);
+      compileSass(sourceDir, devDir, variationDir);
       chokidar
-        .watch(path.join(paths.rootDir, '**/*.scss'), {
-          ignored: paths.variations.map(it => it.rootDir).filter(it => it !== variation.rootDir),
+        .watch(path.join(paths.expDir, '**/*.scss'), {
+          ignored: paths.variations.map(it => it.variationDir).filter(it => it !== variation.variationDir),
         })
-        .on('change', () => compileSass(sourceDir, devDir, rootDir));
+        .on('change', () => compileSass(sourceDir, devDir, variationDir));
       chokidar.watch(devDir).on('change', file => {
         if (/.+\.js/.test(file)) {
           emitJS(devDir);

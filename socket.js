@@ -28,21 +28,39 @@ const getSockets = (exp = '') => {
   return sockets;
 };
 
+const getJsFromHtml = (code = '') => {
+  const start = code.indexOf('<script>') + 8;
+  const end = code.indexOf('</script>');
+  return code.slice(start, end);
+};
+
 const emitJS = (dir = '') => {
   const package = resolvePackage();
   getSockets(dir).forEach(socket => {
     console.log(`Emit JS for ${socket.handshake.query.id}`);
+    const mainPath = path.join(dir, 'index.js');
+    const globalJsPath = path.join(dir, 'global.js');
     const cleanupJsPath = path.join(dir, 'cleanup.js');
-    let mainJS = fs.readFileSync(path.join(dir, 'index.js'), 'utf-8');
+    const cleanupJs = fs.existsSync(cleanupJsPath) && fs.readFileSync(cleanupJsPath, 'utf-8');
+    let globalJs = fs.existsSync(globalJsPath) && fs.readFileSync(globalJsPath, 'utf-8');
+    let mainJs = fs.readFileSync(mainPath, 'utf-8');
 
-    if (fs.existsSync(cleanupJsPath)) {
-      mainJS = `(function() {
-  ${fs.readFileSync(cleanupJsPath, 'utf-8')};
-  ${mainJS}
+    if (package?.conversiondev) {
+      const globalTemplate = globalJs && getCodeInConversionTemplate(globalJs, 'shared');
+      const mainTemplate = getCodeInConversionTemplate(mainJs, 'variation');
+      globalJs = globalTemplate.type === 'html' ? getJsFromHtml(globalTemplate.code) : globalTemplate.code;
+      mainJs = mainTemplate.type === 'html' ? getJsFromHtml(mainTemplate.code) : mainTemplate.code;
+    }
+
+    if (cleanupJs || globalJs) {
+      mainJs = `(function() {
+  ${cleanupJs || ''};
+  ${globalJs || ''};
+  ${mainJs}
 })()`;
     }
 
-    socket.emit('js', package?.conversiondev ? getCodeInConversionTemplate(mainJS) : mainJS);
+    socket.emit('js', mainJs);
   });
 };
 

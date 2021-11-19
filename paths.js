@@ -7,7 +7,9 @@ let paths = {
   rootDir: '',
   expDir: '',
   expPath: '',
-  variations: [{ rootDir: '', sourceDir: '', devDir: '', varPath: '' }],
+  clientId: '',
+  expId: '',
+  variations: [{ sourceDir: '', devDir: '', variationDir: '', variationPath: '' }],
 };
 
 const getRootDir = currentDir => {
@@ -27,18 +29,22 @@ const setUpPaths = (providedExp, variations) => {
   const rootDir = getRootDir(process.cwd());
   const expDir = providedExp ? path.join(process.cwd(), providedExp) : process.cwd();
   const expPath = expDir.replace(/\/$/, '').replace(new RegExp(`${rootDir}/?`), '');
+  const clientId = expPath.split('/').shift();
+  const expId = expPath.match(/^[a-zA-Z0-9]+\/(.+)\/?/)?.[1];
 
   paths = {
     rootDir,
     expDir,
     expPath,
+    clientId,
+    expId,
     variations: variations.map(variationPath => {
       const variationRootDir = path.join(expDir, variationPath);
       return {
         sourceDir: path.join(variationRootDir, 'source'),
         devDir: path.join(variationRootDir, '__dev'),
-        rootDir: variationRootDir,
-        varPath: path.join(expPath, variationPath),
+        variationDir: variationRootDir,
+        variationPath: path.join(expPath, variationPath),
       };
     }),
   };
