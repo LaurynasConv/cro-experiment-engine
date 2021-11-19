@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /* eslint-disable @typescript-eslint/no-var-requires, no-console */
 const { program } = require('commander');
+const fs = require('fs-extra');
 
+const package = fs.readJsonSync('package.json');
 const { optimise } = require('./optimise');
 const { start } = require('./server');
 
-program.version('0.0.1', '--version', 'output the current version');
+program.version(package.version, '-V, --version', 'output the current version');
 
 function list(val, memo) {
   memo.push(val);
