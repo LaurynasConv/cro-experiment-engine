@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /* eslint-disable @typescript-eslint/no-var-requires, no-console */
+const path = require('path');
+
 const { program } = require('commander');
 const fs = require('fs-extra');
 
-const package = fs.readJsonSync('package.json');
+const package = fs.readJsonSync(path.resolve(__dirname, 'package.json'));
 const { optimise } = require('./optimise');
 const { start } = require('./server');
 

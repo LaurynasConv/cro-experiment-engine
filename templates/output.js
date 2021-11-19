@@ -44,7 +44,7 @@
 		init: function () {
 			try {
 				this.waitForElement("body", function (docBody) {
-					docBody.classList.add(tag);
+					docBody.classList.add(tag.replace(/\/|\s+/g, '-').replace(/\./g, '_'));
 				});
 
 				if (debug && document.title.indexOf("CONV QA") < 0) {
