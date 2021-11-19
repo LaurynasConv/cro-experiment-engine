@@ -11,9 +11,11 @@ const fs = require('fs-extra');
 
 const { getPaths } = require('./paths');
 
+const clientTemplate = fs.readFileSync(path.join(__dirname, 'templates/client.js'), 'utf-8');
 /** @argument expPath {string} */
-const clientCode = fs.readFileSync(path.join(__dirname, 'client.js'), 'utf-8');
-const getClientCode = expPath => clientCode.replace(/`{{expPath}}`/g, expPath);
+const getClientCode = expPath => {
+  clientTemplate.replace(/`{{expPath}}`/g, expPath);
+};
 
 exports.createFiles = async () => {
   const { variations } = getPaths();

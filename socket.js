@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const express = require('express');
 const fs = require('fs-extra');
 
+const { getCodeInConversionTemplate, resolvePackage } = require('./compilers');
 const { getPaths } = require('./paths');
 
 const app = express();
@@ -28,6 +29,7 @@ const getSockets = (exp = '') => {
 };
 
 const emitJS = (dir = '') => {
+  const package = resolvePackage();
   getSockets(dir).forEach(socket => {
     console.log(`Emit JS for ${socket.handshake.query.id}`);
     const cleanupJsPath = path.join(dir, 'cleanup.js');
@@ -39,7 +41,8 @@ const emitJS = (dir = '') => {
   ${mainJS}
 })()`;
     }
-    socket.emit('js', mainJS);
+
+    socket.emit('js', package?.conversiondev ? getCodeInConversionTemplate(mainJS) : mainJS);
   });
 };
 
