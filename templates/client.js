@@ -1,6 +1,6 @@
 /* eslint-disable */
 function trigger() {
-  var experiment = '`{{expPath}}`';
+  var experiment = '{{expPath}}';
   var socketScript = document.createElement('script');
   var style = document.createElement('style');
   var injectJs = function(js) {

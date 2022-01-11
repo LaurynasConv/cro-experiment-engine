@@ -94,7 +94,7 @@ const getCodeInConversionTemplate = (code, fileType, env, variationDir) => {
       jsCodeLines.splice(jsCodeLines.length - 2, 2);
       jsCodeLines.splice(0, 1);
     }
-    jsCode = indentLines(jsCodeLines);
+    jsCode = indentLines(jsCodeLines, conversionTemplate.type === 'html' ? '		' : '	');
   } else {
     jsCode = indentLines(codeLines, conversionTemplate.type === 'html' ? '		' : '	');
   }
@@ -109,7 +109,7 @@ const getCodeInConversionTemplate = (code, fileType, env, variationDir) => {
   /** @type {Record<'author' | 'date' | 'expPath' | 'variationCode', string>} */
   const varsToReplace = {
     expName: expPath.replace(/\//g, ' '),
-    expTag: expPath.replace(/\/|\.|\s+/g, '-'),
+    expTag: expPath.replace(/\/|\.|\s+/g, '-').toLowerCase(),
     author: package?.author || 'Conversion',
     date: format(new Date(), 'P p', { locale: ukLocale }),
     expId: expId.replace(/\./g, '-'),
@@ -242,16 +242,12 @@ const compileTS = async (sourceDir, devDir, variationDir) => {
 
   devCompiler.watch({}, async (devErr, devInfo) => {
     if (devErr || devInfo.hasErrors()) {
-      return console.error(
-        new Error({ message: 'TS (dev) compilation error', error: devErr || devInfo.compilation.errors }),
-      );
+      return console.error('TS (dev) compilation error', devErr || devInfo.compilation.errors);
     }
 
     prodCompiler.run((prodErr, prodInfo) => {
       if (prodErr || prodInfo.hasErrors()) {
-        return console.error(
-          new Error({ message: 'TS (prod) compilation error', error: prodErr || prodInfo.compilation.errors }),
-        );
+        return console.error('TS (prod) compilation error', prodErr || prodInfo.compilation.errors);
       }
       handleCompilerOutput('variation', 'production', variationDir);
 
@@ -294,16 +290,12 @@ const compileTS = async (sourceDir, devDir, variationDir) => {
 
     sharedDevCompiler.watch({}, (devError, devInfo) => {
       if (devError || devInfo.hasErrors()) {
-        return console.error(
-          new Error({ message: 'TS (dev) compilation error', error: devError || devInfo.compilation.errors }),
-        );
+        return console.error('TS (dev) compilation error', devError || devInfo.compilation.errors);
       }
 
       sharedProdCompiler.run((prodError, prodInfo) => {
         if (prodError || prodInfo.hasErrors()) {
-          return console.error(
-            new Error({ message: 'TS (dev) compilation error', error: prodError || prodInfo.compilation.errors }),
-          );
+          return console.error('TS (dev) compilation error', prodError || prodInfo.compilation.errors);
         }
         handleCompilerOutput('shared', 'production', variationDir);
 
@@ -338,9 +330,7 @@ const compileTS = async (sourceDir, devDir, variationDir) => {
 
     controlCompiler.watch({}, (controlErr, controlInfo) => {
       if (controlErr || controlInfo.hasErrors()) {
-        return console.error(
-          new Error({ message: 'TS (dev) compilation error', error: controlErr || controlInfo.compilation.errors }),
-        );
+        return console.error('TS (dev) compilation error', controlErr || controlInfo.compilation.errors);
       }
       handleCompilerOutput('control', 'production', variationDir);
 

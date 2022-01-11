@@ -29,7 +29,7 @@ const start = (providedExp, variations) => {
         })
         .on('change', () => compileSass(sourceDir, devDir, variationDir));
       chokidar.watch(devDir).on('change', file => {
-        if (/.+\.js/.test(file)) {
+        if (/.+\.js/.test(file) && !/\.prod\.js$/.test(file)) {
           emitJS(devDir);
         } else if (/.+\.css$/.test(file)) {
           emitCSS(devDir);
