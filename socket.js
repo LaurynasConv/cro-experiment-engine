@@ -16,7 +16,7 @@ const io = new Server(server, { cors: true });
 app.use(express.static(path.join(__dirname, 'public')));
 
 const getSockets = (exp = '') => {
-  /** @type { socketIo.Socket[] } */
+  /** @type { import('socket.io').Socket[] } */
   const sockets = [];
 
   io?.sockets.sockets.forEach(socket => {
@@ -34,9 +34,14 @@ const getJsFromHtml = (code = '') => {
   return code.slice(start, end);
 };
 
-const emitJS = (dir = '') => {
+/**
+ * @param {string} dir
+ * @param {import('socket.io').Socket} providedSocket
+ */
+const emitJS = (dir = '', providedSocket) => {
   const package = resolvePackage();
-  getSockets(dir).forEach(socket => {
+  /** @param {import('socket.io').Socket} socket */
+  const sendCode = socket => {
     console.log(`Emit JS for ${socket.handshake.query.id}`);
     const mainPath = path.join(dir, 'index.js');
     const globalJsPath = path.join(dir, 'global.js');
@@ -61,31 +66,49 @@ const emitJS = (dir = '') => {
     }
 
     socket.emit('js', mainJs);
-  });
+  };
+
+  if (providedSocket) {
+    sendCode(providedSocket);
+  } else {
+    getSockets(dir).forEach(sendCode);
+  }
 };
 
-const emitCSS = (dir = '') => {
-  getSockets(dir).forEach(socket => {
+/**
+ * @param {string} dir
+ * @param {import('socket.io').Socket} providedSocket
+ */
+const emitCSS = (dir = '', providedSocket) => {
+  /** @param {import('socket.io').Socket} socket */
+  const sendCode = socket => {
     console.log(`Emit CSS for ${socket.handshake.query.id}`);
     socket.emit('css', fs.readFileSync(path.join(dir, 'index.css'), 'utf-8'));
-  });
+  };
+
+  if (providedSocket) {
+    sendCode(providedSocket);
+  } else {
+    getSockets(dir).forEach(sendCode);
+  }
 };
 
 const startServer = () =>
   new Promise(resolve => {
     const { rootDir } = getPaths();
 
-    io.on('connect', ({ handshake: { query } }) => {
+    io.on('connect', socket => {
+      const { id } = socket.handshake.query;
       resolve();
 
-      if (query.id) {
-        const requestedExpDir = path.join(rootDir, query.id, '__dev');
+      if (id) {
+        const requestedExpDir = path.join(rootDir, id, '__dev');
         const expFound = fs.existsSync(requestedExpDir);
-        console.log('New connection', { query: { id: query.id }, requestedExpDir, expFound });
+        console.log('New connection', { query: { id }, requestedExpDir, expFound });
 
         if (expFound) {
-          emitJS(requestedExpDir);
-          emitCSS(requestedExpDir);
+          emitJS(requestedExpDir, socket);
+          emitCSS(requestedExpDir, socket);
         }
       }
     });
