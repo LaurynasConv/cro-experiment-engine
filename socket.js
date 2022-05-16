@@ -40,27 +40,43 @@ const getJsFromHtml = (code = '') => {
  */
 const emitJS = (dir = '', providedSocket) => {
   const package = resolvePackage();
+  const con = package?.conversiondev;
   /** @param {import('socket.io').Socket} socket */
   const sendCode = socket => {
     console.log(`Emit JS for ${socket.handshake.query.id}`);
     const mainPath = path.join(dir, 'index.js');
-    const globalJsPath = path.join(dir, 'global.js');
     const cleanupJsPath = path.join(dir, 'cleanup.js');
     const cleanupJs = fs.existsSync(cleanupJsPath) && fs.readFileSync(cleanupJsPath, 'utf-8');
-    let globalJs = fs.existsSync(globalJsPath) && fs.readFileSync(globalJsPath, 'utf-8');
+    const removeDomElements =
+      con?.cleanupSelectors &&
+      `document.querySelectorAll('${con?.cleanupSelectors}').forEach($item => $item.remove());`;
     let mainJs = fs.readFileSync(mainPath, 'utf-8');
 
-    if (package?.conversiondev) {
-      const globalTemplate = globalJs && getCodeInConversionTemplate(globalJs, 'shared');
+    if (cleanupJs && /__MutationObserver/.test(cleanupJs)) {
+      /** @type {[RegExp, string][]} */
+      const overrides = [
+        [/window\.MutationObserver|MutationObserver/g, '__MutationObserver'],
+        [/window\.setTimeout|setTimeout/g, '__setTimeout'],
+        [/window\.setInterval|setInterval/g, '__setInterval'],
+        [/window\.addEventListener/g, '__windowAddEventListener'],
+        [/document\.addEventListener/g, '__documentAddEventListener'],
+        [/document\.createElement/g, '__createElement'],
+      ];
+
+      overrides.forEach(([regExp, replace]) => {
+        mainJs = mainJs.replace(regExp, replace);
+      });
+    }
+
+    if (con) {
       const mainTemplate = getCodeInConversionTemplate(mainJs, 'variation');
-      globalJs = globalTemplate.type === 'html' ? getJsFromHtml(globalTemplate.code) : globalTemplate.code;
       mainJs = mainTemplate.type === 'html' ? getJsFromHtml(mainTemplate.code) : mainTemplate.code;
     }
 
-    if (cleanupJs || globalJs) {
+    if (cleanupJs || removeDomElements) {
       mainJs = `(function() {
+  ${removeDomElements || ''}
   ${cleanupJs || ''};
-  ${globalJs || ''};
   ${mainJs}
 })()`;
     }

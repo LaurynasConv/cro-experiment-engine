@@ -10,7 +10,7 @@ function trigger() {
       console.error('Error occured in the Experience script');
       console.error(err);
     }
-  }
+  };
 
   window.__con_dev = window.__con_dev || {};
   window.__con_dev[experiment] = window.__con_dev[experiment] || { injected: true };
@@ -46,6 +46,6 @@ function trigger() {
     document.head.appendChild(style);
     document.head.appendChild(socketScript);
   }
-};
+}
 
 trigger();

@@ -21,7 +21,7 @@ program
   .alias('s')
   .option('-v, --variations <path>', 'Experiment variations', list, [''])
   .description('Start the development server')
-  .action((experiment, options) => {
+  .action((experiment = '.', options) => {
     if (options.variations.length > 1) {
       options.variations.shift();
     }

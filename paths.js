@@ -9,7 +9,7 @@ let paths = {
   expPath: '',
   clientId: '',
   expId: '',
-  variations: [{ sourceDir: '', devDir: '', variationDir: '', variationPath: '' }],
+  variations: [{ sourceDir: '', devDir: '', variationDir: '', variationPath: '', name: '' }],
 };
 
 const getRootDir = currentDir => {
@@ -45,6 +45,7 @@ const setUpPaths = (providedExp, variations) => {
         devDir: path.join(variationRootDir, '__dev'),
         variationDir: variationRootDir,
         variationPath: path.join(expPath, variationPath),
+        name: variationPath,
       };
     }),
   };

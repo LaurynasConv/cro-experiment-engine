@@ -1,0 +1,10 @@
+{
+  "name": "{{expTag}}",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Conversion",
+  "conversiondev": {},
+  "scripts": {
+    "start": "cro s{{variations}}"
+  }
+}

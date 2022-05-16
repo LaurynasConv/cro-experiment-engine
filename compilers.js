@@ -10,6 +10,7 @@ const sass = require('node-sass');
 const prettier = require('prettier');
 const { format } = require('date-fns');
 const ukLocale = require('date-fns/locale/en-GB');
+const UglifyJS = require('uglify-js');
 
 Mustache.escape = code => code;
 
@@ -53,6 +54,7 @@ const getCodeInConversionTemplate = (code, fileType, env, variationDir) => {
     code: fileType === 'variation' ? fs.readFileSync(genericTemplatePath, 'utf-8') : '{{jsCode}}',
     type: 'js',
   };
+  let templateExists = fileType === 'variation';
 
   if (fs.existsSync(clientTemplateDir)) {
     const clientTemplatePath = {
@@ -71,19 +73,23 @@ const getCodeInConversionTemplate = (code, fileType, env, variationDir) => {
 
     if (fs.existsSync(clientTemplatePath.js[fileType])) {
       conversionTemplate.code = fs.readFileSync(clientTemplatePath.js[fileType], 'utf-8');
+      templateExists = true;
     } else if (fs.existsSync(clientTemplatePath.html[fileType])) {
       conversionTemplate.code = fs.readFileSync(clientTemplatePath.html[fileType], 'utf-8');
       conversionTemplate.type = 'html';
+      templateExists = true;
     }
   }
 
   const codeLines = code.split(/[\n\r]/);
-  if (env === 'production' && fileType !== 'css') {
+  if (templateExists && env === 'production' && fileType !== 'css') {
     codeLines.splice(codeLines.length - 2, 2);
     codeLines.splice(0, 1);
   }
 
-  const devDir = variations.find(it => it.variationDir === variationDir)?.devDir;
+  const variation = variations.find(it => it.variationDir === variationDir);
+  const devDir = variation?.devDir;
+  const varName = variation?.name;
   const devJsPath = devDir && path.join(devDir, 'index.prod.js');
   const devCssPath = devDir && path.join(devDir, 'index.prod.css');
 
@@ -95,8 +101,10 @@ const getCodeInConversionTemplate = (code, fileType, env, variationDir) => {
       jsCodeLines.splice(0, 1);
     }
     jsCode = indentLines(jsCodeLines, conversionTemplate.type === 'html' ? '		' : '	');
-  } else {
+  } else if (templateExists) {
     jsCode = indentLines(codeLines, conversionTemplate.type === 'html' ? '		' : '	');
+  } else {
+    jsCode = codeLines.join('\n');
   }
 
   let cssCode = '';
@@ -106,9 +114,11 @@ const getCodeInConversionTemplate = (code, fileType, env, variationDir) => {
     cssCode = indentLines(codeLines);
   }
 
+  const expName = `${expPath.replace(/\//g, ' ')}${varName ? ` (${varName})` : ''}`;
   /** @type {Record<'author' | 'date' | 'expPath' | 'variationCode', string>} */
   const varsToReplace = {
-    expName: expPath.replace(/\//g, ' '),
+    expName,
+    expNameLong: expName,
     expTag: expPath.replace(/\/|\.|\s+/g, '-').toLowerCase(),
     author: package?.author || 'Conversion',
     date: format(new Date(), 'P p', { locale: ukLocale }),
@@ -120,6 +130,13 @@ const getCodeInConversionTemplate = (code, fileType, env, variationDir) => {
   };
 
   conversionTemplate.code = Mustache.render(conversionTemplate.code, varsToReplace);
+
+  if (package?.conversiondev?.polyfills || /\.closest\(/.test(UglifyJS.minify(jsCode).code)) {
+    conversionTemplate.code = conversionTemplate.code.replace(
+      /(\s+)\/\/ Polyfills/,
+      '$1// Polyfills$1var ElProto=Element.prototype;if(ElProto.matches||(ElProto.matches=ElProto.msMatchesSelector||ElProto.webkitMatchesSelector),!ElProto.closest)ElProto.closest=function(t){var o=this;do{if(ElProto.matches.call(o,t))return o;o=o.parentElement||o.parentNode}while(null!==o&&1===o.nodeType);return null};',
+    );
+  }
 
   if (fileType === 'css' && devCssPath) {
     fs.writeFileSync(devCssPath, code);
@@ -152,7 +169,15 @@ const handleCompilerOutput = (fileType, env, variationDir) => {
   const concatModuleReplaced = prettified.replace(concatRegExp, `CONCATENATED MODULE: ${expPath}/`);
 
   if (package?.conversiondev) {
-    const template = getCodeInConversionTemplate(concatModuleReplaced, fileType, env, variationDir);
+    let webpackReplaced = concatModuleReplaced
+      .replace(/\/\*{6}\/ "use strict";[\n\r]\t/, '')
+      .replace(/\/\/ webpackBootstrap[\n\r]\t/, '');
+
+    if (webpackReplaced.match(/__webpack_exports__/g)?.length === 1) {
+      webpackReplaced = webpackReplaced.replace(/var __webpack_exports__ = {};\s?/, '');
+    }
+
+    const template = getCodeInConversionTemplate(webpackReplaced, fileType, env, variationDir);
 
     if (template.type === 'html') {
       const fileHtmlPath = path.join(variationDir, `${fileType}.html`);
@@ -309,8 +334,6 @@ const compileTS = async (sourceDir, devDir, variationDir) => {
         });
       });
     });
-  } else {
-    handleCompilerOutput('control', 'production', variationDir);
   }
 
   if (fs.existsSync(controlEntry)) {
@@ -342,8 +365,6 @@ const compileTS = async (sourceDir, devDir, variationDir) => {
         },
       });
     });
-  } else {
-    handleCompilerOutput('shared', 'production', variationDir);
   }
 };
 
