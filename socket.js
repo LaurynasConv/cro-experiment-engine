@@ -55,7 +55,7 @@ const emitJS = (dir = '', providedSocket) => {
     if (cleanupJs && /__MutationObserver/.test(cleanupJs)) {
       /** @type {[RegExp, string][]} */
       const overrides = [
-        [/window\.MutationObserver|MutationObserver/g, '__MutationObserver'],
+        [/window\.MutationObserver|MutationObserver|Observer/g, '__MutationObserver'],
         [/window\.setTimeout|setTimeout/g, '__setTimeout'],
         [/window\.setInterval|setInterval/g, '__setInterval'],
         [/window\.addEventListener/g, '__windowAddEventListener'],
