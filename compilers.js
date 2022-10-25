@@ -6,7 +6,7 @@ const Mustache = require('mustache');
 const postcssPresetEnv = require('postcss-preset-env');
 const fs = require('fs-extra');
 const webpack = require('webpack');
-const sass = require('node-sass');
+const sass = require('sass');
 const prettier = require('prettier');
 const { format } = require('date-fns');
 const ukLocale = require('date-fns/locale/en-GB');
@@ -384,54 +384,45 @@ const compileSass = (sourceDir, devDir, variationDir) => {
   }
 
   fs.ensureDirSync(devDir);
-  sass.render(
-    {
-      ...options,
-      sourceMapContents: true,
-      sourceMapEmbed: true,
-      sourceMap: true,
+  const devStartTime = Date.now();
+  const devInfo = sass.compile(file, {
+    ...options,
+    sourceMapContents: true,
+    sourceMapEmbed: true,
+    sourceMap: true,
+  });
+
+  fs.writeFileSync(outFile, devInfo.css);
+
+  const prodStartTime = Date.now();
+  const prodInfo = sass.compile(file, { ...options, style: 'expanded' });
+
+  const endTime = Date.now();
+  console.log('-----');
+  console.table({
+    'SCSS updated': {
+      'Experience path': `${variationDir.replace(expRootDir, '')}`,
+      'Dev compile time': `${endTime - devStartTime} ms`,
+      'Prod compile time': `${endTime - prodStartTime} ms`,
     },
-    (devErr, devInfo) => {
-      if (devErr) {
-        return console.error(devErr);
-      }
+  });
 
-      fs.writeFileSync(outFile, devInfo.css);
+  const prodFileCssPath = path.join(variationDir, 'variation.css');
+  postcss([postcssPresetEnv({ browsers: ['iOS 8', 'not dead'] })])
+    .process(prodInfo.css, { from: file, to: prodFileCssPath })
+    .then(({ css }) => {
+      const template = package?.conversiondev && getCodeInConversionTemplate(css, 'css', 'production', variationDir);
+      if (template?.type === 'html') {
+        const variationPath = path.join(variationDir, 'variation.html');
+        fs.writeFileSync(variationPath, template.code);
 
-      sass.render({ ...options, outputStyle: 'expanded' }, (prodErr, prodInfo) => {
-        if (prodErr) {
-          throw prodErr;
+        if (fs.existsSync(prodFileCssPath)) {
+          fs.unlinkSync(prodFileCssPath);
         }
-
-        console.log('-----');
-        console.table({
-          'SCSS updated': {
-            'Experience path': `${variationDir.replace(expRootDir, '')}`,
-            'Dev compile time': `${devInfo.stats.end - devInfo.stats.start} ms`,
-            'Prod compile time': `${prodInfo.stats.end - prodInfo.stats.start} ms`,
-          },
-        });
-
-        const prodFileCssPath = path.join(variationDir, 'variation.css');
-        postcss([postcssPresetEnv({ browsers: ['iOS 8', 'not dead'] })])
-          .process(prodInfo.css, { from: file, to: prodFileCssPath })
-          .then(({ css }) => {
-            const template =
-              package?.conversiondev && getCodeInConversionTemplate(css, 'css', 'production', variationDir);
-            if (template?.type === 'html') {
-              const variationPath = path.join(variationDir, 'variation.html');
-              fs.writeFileSync(variationPath, template.code);
-
-              if (fs.existsSync(prodFileCssPath)) {
-                fs.unlinkSync(prodFileCssPath);
-              }
-            } else {
-              fs.writeFileSync(prodFileCssPath, css);
-            }
-          });
-      });
-    },
-  );
+      } else {
+        fs.writeFileSync(prodFileCssPath, css);
+      }
+    });
 };
 
 module.exports = { compileTS, compileSass, getCodeInConversionTemplate, resolvePackage };
