@@ -1,6 +1,6 @@
 {
   "name": "@conversiondev/engine",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "Development server for CRO experiments",
   "scripts": {
     "start": "nodemon index.js",
@@ -32,8 +32,8 @@
     "imagemin": "^7.0.1",
     "imagemin-webp": "^6.0.0",
     "mustache": "^4.2.0",
-    "postcss": "^8.3.11",
-    "postcss-preset-env": "^7.0.0",
+    "postcss": "^8.4.18",
+    "postcss-preset-env": "7.5.x",
     "prettier": "^2.4.1",
     "sass": "^1.55.0",
     "socket.io": "^4.4.0",
