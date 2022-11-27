@@ -31,7 +31,7 @@ const start = (providedExp, variations) => {
       chokidar.watch(devDir).on('change', file => {
         if (/.+\.js/.test(file) && !/\.prod\.js$/.test(file)) {
           emitJS(devDir);
-        } else if (/.+\.css$/.test(file)) {
+        } else if (/.+\.css$/.test(file) && !/\.prod\.css$/.test(file)) {
           emitCSS(devDir);
         }
       });
