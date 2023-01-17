@@ -1,6 +1,6 @@
 {
   "name": "@conversiondev/engine",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "Development server for CRO experiments",
   "scripts": {
     "start": "nodemon index.js",

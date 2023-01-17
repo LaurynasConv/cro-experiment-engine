@@ -37,17 +37,11 @@ const __createElement = function createElement(tagName, options) {
 };
 
 const __windowAddEventListener = function addEventListener(type, listener, options) {
-  const _listener = function() {
-    listener.apply(this, arguments);
-  };
-  window.__con_dev.windowListeners.push({ listener: _listener, type });
-  window.addEventListener(type, _listener, options);
+  window.__con_dev.windowListeners.push({ listener, type });
+  window.addEventListener(type, listener, options);
 };
 
 const __documentAddEventListener = function addEventListener(type, listener, options) {
-  const _listener = function() {
-    listener.apply(this, arguments);
-  };
-  window.__con_dev.documentListeners.push({ listener: _listener, type });
-  document.addEventListener(type, _listener, options);
+  window.__con_dev.documentListeners.push({ listener, type });
+  document.addEventListener(type, listener, options);
 };

@@ -96,16 +96,19 @@ const emitJS = (dir = '', providedSocket) => {
  * @param {import('socket.io').Socket} providedSocket
  */
 const emitCSS = (dir = '', providedSocket) => {
+  const cssPath = path.join(dir, 'index.css');
   /** @param {import('socket.io').Socket} socket */
   const sendCode = socket => {
     console.log(`Emit CSS for ${socket.handshake.query.id}`);
-    socket.emit('css', fs.readFileSync(path.join(dir, 'index.css'), 'utf-8'));
+    socket.emit('css', fs.readFileSync(cssPath, 'utf-8'));
   };
 
-  if (providedSocket) {
-    sendCode(providedSocket);
-  } else {
-    getSockets(dir).forEach(sendCode);
+  if (fs.existsSync(cssPath)) {
+    if (providedSocket) {
+      sendCode(providedSocket);
+    } else {
+      getSockets(dir).forEach(sendCode);
+    }
   }
 };
 

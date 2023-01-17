@@ -14,6 +14,7 @@ function trigger() {
 
   window.__con_dev = window.__con_dev || {};
   window.__con_dev[experiment] = window.__con_dev[experiment] || { injected: true };
+  console.log('[CONV] Dev server -->', { experiment });
 
   if (window.__con_dev[experiment].code) {
     injectJs(window.__con_dev[experiment].code);
@@ -25,7 +26,7 @@ function trigger() {
       });
 
       socket.on('js', function(js) {
-        console.log({ js: js });
+        console.log('[CONV] Dev server -->', { js: js });
 
         try {
           window.__con_dev[experiment].code = js;
@@ -37,7 +38,7 @@ function trigger() {
       });
 
       socket.on('css', function(css) {
-        console.log({ css: css });
+        console.log('[CONV] Dev server -->', { css: css });
 
         style.innerHTML = css;
       });
